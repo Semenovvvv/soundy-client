@@ -1,0 +1,58 @@
+.profile-container {
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 1rem;
+}
+
+.profile-content {
+  margin-top: 2rem;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-left: 13px;
+}
+
+.section-header h2 {
+  margin: 0;
+}
+
+.view-all {
+  color: #1db954;
+  text-decoration: none;
+  font-weight: bold;
+  transition: color 0.2s ease;
+}
+
+.view-all:hover {
+  color: #1ed760;
+}
+
+.view-all-btn {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.3s ease;
+  position: relative;
+  &:hover{
+    color: #1ed760;
+  }
+}
+
+.arrow {
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+.view-all-btn:hover .arrow {
+  transform: translateX(4px);
+}
+
+.playlists,
+.tracks{
+  margin: 0 4rem 2rem 4rem;
+}

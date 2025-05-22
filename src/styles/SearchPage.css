@@ -1,0 +1,11 @@
+.search-page {
+  padding: 20px;
+  max-width: 1000px;
+  margin: auto;
+}
+
+.track-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}

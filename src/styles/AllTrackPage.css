@@ -1,0 +1,87 @@
+/* AllTracksPage.css */
+.all-tracks-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+  
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+  
+  .sort-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .sort-select {
+    padding: 0.5rem;
+    border-radius: 5px;
+    border: 1px solid #444;
+    background: #1c1c1c;
+    color: white;
+  }
+  
+  .tracks-table {
+    background: #1c1c1c;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  
+  .table-header {
+    display: grid;
+    grid-template-columns: 3fr 2fr 1fr;
+    padding: 1rem;
+    background: #2a2a2a;
+    color: #aaa;
+    font-weight: bold;
+  }
+  
+  .table-body {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .track-row {
+    display: grid;
+    grid-template-columns: 3fr 2fr 1fr auto;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #2a2a2a;
+    transition: background 0.2s ease;
+  }
+  
+  .track-row:hover {
+    background: #2a2a2a;
+  }
+  
+  .track-title {
+    font-weight: bold;
+  }
+  
+  .track-artist {
+    color: #aaa;
+  }
+  
+  .track-duration {
+    color: #888;
+    text-align: right;
+  }
+  
+  .track-row button {
+    margin-left: 1rem;
+    color: #1db954;
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
+  
+  .track-row button:hover {
+    color: #1ed760;
+  }

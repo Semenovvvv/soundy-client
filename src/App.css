@@ -1,0 +1,22 @@
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background-color: #202020;
+  color: white;
+}
+
+main {
+  padding-top: 75px;  /* Учитываем высоту NavBar (1rem + 1rem + элементы внутри) */
+  padding-bottom: 90px; /* Учитываем высоту AudioPlayer */
+  min-height: calc(100vh - 75px - 90px);
+  box-sizing: border-box;
+}
+
+/* На мобильных устройствах увеличиваем нижний отступ, т.к. плеер становится выше */
+@media (max-width: 700px) {
+  main {
+    padding-bottom: 180px;
+    min-height: calc(100vh - 75px - 180px);
+  }
+}
