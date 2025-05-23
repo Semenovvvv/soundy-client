@@ -14,9 +14,35 @@ interface CreateAlbumResponse {
   album: Album;
 }
 
+interface GetAlbumsByAuthorResponse {
+  albums: Album[];
+}
+
+interface GetAlbumByIdResponse {
+  album: Album;
+}
+
 const albumService = {
   getAlbumByIdMock: async (id: string): Promise<Album | null> => {
     return mockAlbums.find((a) => a.id === id) || null;
+  },
+
+  // Получение альбома по ID
+  getAlbumById: async (id: string): Promise<Album | null> => {
+    try {
+      const response = await fetch(`${API_URL}/album/${id}`);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Ошибка при получении альбома');
+      }
+      
+      const data = await response.json() as GetAlbumByIdResponse;
+      return data.album || null;
+    } catch (error) {
+      console.error('Ошибка при получении альбома:', error);
+      return null;
+    }
   },
 
   searchAlbumByName: async (name: string): Promise<Album[]> => {
@@ -31,6 +57,24 @@ const albumService = {
     );
 
     return filteredAlbums;
+  },
+
+  // Получение альбомов по ID автора
+  getAlbumsByAuthor: async (authorId: string): Promise<Album[]> => {
+    try {
+      const response = await fetch(`${API_URL}/album/author/${authorId}`);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Ошибка при получении альбомов');
+      }
+      
+      const data = await response.json() as GetAlbumsByAuthorResponse;
+      return data.albums || [];
+    } catch (error) {
+      console.error('Ошибка при получении альбомов:', error);
+      return [];
+    }
   },
 
   // Создание нового альбома

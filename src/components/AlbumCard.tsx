@@ -52,19 +52,23 @@ type AlbumCardProps = {
 const AlbumCard: React.FC<AlbumCardProps> = ({ album }) => {
   const navigate = useNavigate();
 
-  const { title, avatarUrl, authors } = album;
+  const { title } = album;
+
+  const coverUrl = album.avatarUrl ? `http://localhost:8085/api/file/image/${album.avatarUrl}` : "https://placehold.co/400";
 
   const handleClick = (e: React.MouseEvent<HTMLImageElement>) => {
     e.preventDefault();
-    navigate(`/album/${album.id}`);
+    navigate(`/album/${album.id}`, { state: { album } });
   };
 
   return (
     <AlbumContainer>
-      <AlbumCover src={avatarUrl || "https://placehold.co/400"} alt={title} onClick={handleClick} />
+      <AlbumCover src={coverUrl} alt={title} onClick={handleClick} />
       <AlbumTitle>{title}</AlbumTitle>
       <AlbumArtist>
-        {authors.map((author) => author.name).join(", ")}
+        {album.authors && album.authors.length > 0
+          ? album.authors.map((author) => author.name).join(", ")
+          : ""}
       </AlbumArtist>
     </AlbumContainer>
   );

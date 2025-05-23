@@ -7,7 +7,6 @@ import { Playlist } from "../types/playlist";
 import TrackList from "../components/TrackList";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import HorizontalPlaylistRow from "../components/HorizontalPlaylistRow";
-import AudioPlayer from "../components/AudioPlayer";
 
 
 const Container = styled.div`
@@ -76,7 +75,6 @@ const CollectionPage: React.FC = () => {
           <HorizontalPlaylistRow playlists={playlists?.slice(0, 5)}></HorizontalPlaylistRow>
         </section>
       </Container>
-      <AudioPlayer trackId="testtest" />
     </div>
   );
 };

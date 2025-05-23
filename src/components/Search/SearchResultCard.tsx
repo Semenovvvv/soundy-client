@@ -46,6 +46,15 @@ const Subtitle = styled.p`
   margin: 0;
 `;
 
+// Helper to format avatar URLs
+const formatAvatarUrl = (url: string | null | undefined): string => {
+  if (!url) return 'https://via.placeholder.com/60';
+  
+  return url.startsWith('http') 
+    ? url 
+    : `http://localhost:8085/api/file/${url}`;
+};
+
 const SearchResultCard: React.FC<{
   type: 'track' | 'user' | 'album' | 'playlist';
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -57,11 +66,11 @@ const SearchResultCard: React.FC<{
     const track = data as Track;
     content = (
       <>
-        <Avatar src={track.avatarUrl || 'https://via.placeholder.com/60 '} alt="Track" />
+        <Avatar src={formatAvatarUrl(track.avatarUrl)} alt="Track" />
         <Info>
           <Title>{track.title}</Title>
           <Subtitle>
-            {track.authors.map((author) => author.name).join(', ')}
+            {track.user?.name || ''}
           </Subtitle>
         </Info>
       </>
@@ -70,7 +79,7 @@ const SearchResultCard: React.FC<{
     const user = data as User;
     content = (
       <>
-        <Avatar src={user.avatarUrl || 'https://via.placeholder.com/60 '} alt="User" />
+        <Avatar src={formatAvatarUrl(user.avatarUrl)} alt="User" />
         <Info>
           <Title>{user.name}</Title>
           <Subtitle>{user.email}</Subtitle>
@@ -81,11 +90,13 @@ const SearchResultCard: React.FC<{
     const album = data as Album;
     content = (
       <>
-        <Avatar src={album.avatarUrl || 'https://via.placeholder.com/60 '} alt="Album" />
+        <Avatar src={formatAvatarUrl(album.avatarUrl)} alt="Album" />
         <Info>
           <Title>{album.title}</Title>
           <Subtitle>
-            {album.authors.map((author) => author.name).join(', ')}
+            {album.authors && album.authors.length > 0 
+              ? album.authors.map((author) => author.name).join(', ') 
+              : ''}
           </Subtitle>
         </Info>
       </>
@@ -94,10 +105,10 @@ const SearchResultCard: React.FC<{
     const playlist = data as Playlist;
     content = (
       <>
-        <Avatar src={playlist.avatarUrl || 'https://via.placeholder.com/60 '} alt="Playlist" />
+        <Avatar src={formatAvatarUrl(playlist.avatarUrl)} alt="Playlist" />
         <Info>
-          <Title>{playlist.name}</Title>
-          <Subtitle>{playlist.author.name}</Subtitle>
+          <Title>{playlist.title}</Title>
+          <Subtitle>{playlist.author?.name || ''}</Subtitle>
         </Info>
       </>
     );

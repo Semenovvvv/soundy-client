@@ -1,3 +1,4 @@
+import React from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import "./App.css";
 import NavBar from "./components/NavBar";
@@ -15,11 +16,14 @@ import AllPlaylistPage from "./pages/AllPlaylistPage";
 import PlaylistPage from "./pages/PlaylistPage";
 import CreateAlbumPage from "./pages/CreateAlbumPage";
 import AudioPlayer from "./components/AudioPlayer";
+import { AudioPlayerProvider, useAudioPlayer } from "./contexts/AudioPlayerContext";
 
-function App() {
+// Inner App component that can use the useAudioPlayer hook
+const AppContent: React.FC = () => {
   const location = useLocation();
   const hideNavRoutes = ['/login', '/register'];
   const shouldShowNavBar = !hideNavRoutes.includes(location.pathname);
+  const { currentTrack } = useAudioPlayer();
 
   return (
     <>
@@ -44,8 +48,17 @@ function App() {
           </Route>
         </Routes>
       </main>
-      <AudioPlayer trackId="testtest" />
+      {currentTrack && <AudioPlayer track={currentTrack} />}
     </>
+  );
+};
+
+// Main App component that provides the audio player context
+function App() {
+  return (
+    <AudioPlayerProvider>
+      <AppContent />
+    </AudioPlayerProvider>
   );
 }
 

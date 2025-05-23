@@ -69,19 +69,24 @@ const Duration = styled.span`
   color: #929292;
 `;
 
-const TrackCard: React.FC<{ track: Track }> = ({ track }) => {
+const TrackCard: React.FC<{ track: Track; onPlay: (trackId: string) => void }> = ({ track, onPlay }) => {
   const [isLiked, setIsLiked] = useState(track.isLiked);
-  const { title, authorId, duration } = track;
+  const { id, title, user, duration, } = track;
 
-  const avatarUrl = track.avatarUrl;
+  const avatarUrl = track.avatarUrl ? `http://localhost:8085/api/file/image/${track.avatarUrl}` : "https://placehold.co/400";
+
 
   const handleLike = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     setIsLiked((prev) => !prev);
   };
 
+  const handlePlay = () => {
+    onPlay(id);
+  };
+
   return (
-    <TrackContainer>
+    <TrackContainer onClick={handlePlay}>
       <Avatar
         src={avatarUrl || "https://placehold.co/400"}
         alt="Track"
@@ -89,7 +94,7 @@ const TrackCard: React.FC<{ track: Track }> = ({ track }) => {
       <InfoContainer>
         <Title>{title}</Title>
         <Author>
-          {authorId}
+          {user?.name}
         </Author>
       </InfoContainer>
       <Controls>

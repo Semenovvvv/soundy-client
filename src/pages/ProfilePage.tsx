@@ -6,12 +6,13 @@ import TrackList from "../components/TrackList";
 import UserHeader from "../components/UserHeader";
 import { Album } from "../types/album";
 import HorizontalAlbumRow from "../components/HorizontalAlbumRow";
-import playlistService from "../services/playlistService";
 import userService from "../services/userService";
 import authService from "../services/authService";
-import { Playlist } from "../types/playlist";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import styled from 'styled-components';
+import { Track } from "../types/track";
+import trackService from "../services/trackService";
+import albumService from "../services/albumService";
 
 const CreateAlbumButton = styled.button`
   padding: 0.5rem 1rem;
@@ -52,9 +53,9 @@ const EmptyStateText = styled.p`
 const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const { userId } = useParams<{ userId: string }>();
-  const [userFavoritePlaylist, setPlaylist] = useState<Playlist | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [albums, setAlbums] = useState<Album[]>([]);
+  const [tracks, setTracks] = useState<Track[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -71,8 +72,6 @@ const ProfilePage: React.FC = () => {
   };
 
   const handleEditProfile = () => {
-    // Пока просто заглушка - здесь можно открыть модальное окно или
-    // перенаправить на страницу редактирования профиля
     console.log('Редактирование профиля');
   };
 
@@ -82,12 +81,10 @@ const ProfilePage: React.FC = () => {
         setLoading(true);
         setError(null);
         
-        // Проверяем текущий путь, чтобы определить, нужно ли загружать данные текущего пользователя
         const isProfileMePath = window.location.pathname === '/profile/me';
         
         console.log("Fetching user data, userId:", userId);
         
-        // Если userId не определен, пробуем получить текущего пользователя
         if (!userId && !isProfileMePath) {
           // Проверяем, авторизован ли пользователь
           if (!authService.isAuthenticated()) {
@@ -123,20 +120,16 @@ const ProfilePage: React.FC = () => {
         console.log("User data loaded:", userData);
         setUser(userData);
         
-        // Здесь нужно добавить получение альбомов пользователя и его избранного плейлиста
-        // Пока оставим моки до реализации соответствующих API
         try {
-          // В реальном API эти запросы нужно заменить на соответствующие
-          const userFavoritePlaylist = await playlistService.getFavorite(userData.id);
-          setPlaylist(userFavoritePlaylist);
+          const userTracks = await trackService.getTracksByAuthor(userData.id);
+          setTracks(userTracks);
+
+          const userAlbums = await albumService.getAlbumsByAuthor(userData.id);
+          setAlbums(userAlbums);
+
         } catch (playlistError) {
           console.error("Ошибка при загрузке плейлистов:", playlistError);
-          setPlaylist(null);
         }
-        
-        // Здесь будет запрос на получение альбомов пользователя
-        // Пока используем моки
-        setAlbums([]);
         
       } catch (error) {
         console.error("Ошибка при загрузке данных пользователя:", error);
@@ -172,15 +165,15 @@ const ProfilePage: React.FC = () => {
             </h2>
           </div>
 
-          <div className="tracks-grid">
-            {userFavoritePlaylist && userFavoritePlaylist.tracks && userFavoritePlaylist.tracks.length > 0 ? (
-              <TrackList tracks={userFavoritePlaylist.tracks.slice(0, 5)} />
+          <div className="tracks-grid">{
+            tracks.length > 0 ? (
+              <TrackList tracks={tracks.slice(0,5)} />
             ) : (
               <EmptyState>
                 <EmptyStateText>
                   {isCurrentUser 
                     ? "У вас пока нет избранных треков" 
-                    : "У этого пользователя нет избранных треков"}
+                    : "У этого пользователя нет загруженных треков"}
                 </EmptyStateText>
               </EmptyState>
             )}

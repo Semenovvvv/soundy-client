@@ -4,8 +4,8 @@ import { User } from "./user";
 export type Track = {
     id: string;
     title: string;
-    author: User;
-    authorId: string;
+    user: User;
+    userId: string;
     album: Album;
     albumId: string;
     isLiked: boolean;

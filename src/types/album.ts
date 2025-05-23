@@ -4,8 +4,9 @@ import { User } from "./user";
 export type Album = {
   id: string;
   title: string;
-  authors: User[];
-  createdAt: string;
+  authorId?: string;
+  authors?: User[];
+  createdAt: string | { seconds: number; nanos: number };
   avatarUrl: string | null;
   tracks?: Track[];
   trackCount?: number;
