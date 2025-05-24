@@ -1,6 +1,7 @@
+import config from '../config';
 import authService from './authService';
 
-const API_URL = 'http://localhost:8085/api';
+const API_URL = config.API_URL;
 
 class FileService {
   // Загрузка изображения
