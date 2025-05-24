@@ -106,6 +106,39 @@ class AuthService {
   getUserId(): string | null {
     return localStorage.getItem('userId');
   }
+
+  // Logout user (sign out)
+  async logout(): Promise<void> {
+    try {
+      const refreshToken = localStorage.getItem('refreshToken');
+      
+      if (!refreshToken) {
+        console.warn('No refresh token found for logout');
+        this.removeAuth();
+        return;
+      }
+      
+      const response = await fetch(`${API_URL}/auth/signout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refreshToken }),
+      });
+      
+      if (!response.ok) {
+        console.error('Error during logout:', response.status);
+      }
+      
+      // Always clear local auth data, even if the request fails
+      this.removeAuth();
+    } catch (error) {
+      console.error('Error during logout:', error);
+      // Still remove auth data even if the request fails
+      this.removeAuth();
+      throw error;
+    }
+  }
 }
 
 export default new AuthService(); 

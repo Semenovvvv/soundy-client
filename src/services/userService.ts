@@ -4,6 +4,13 @@ import config from "../config";
 
 const API_URL = config.API_URL;
 
+// Interface for user update with only the allowed fields
+interface UserUpdateDto {
+  name?: string;
+  bio?: string;
+  avatarUrl?: string;
+}
+
 class UserService {
   // Получить информацию о текущем пользователе
   async getCurrentUser(): Promise<User> {
@@ -95,6 +102,31 @@ class UserService {
     
     const response = await fetch(`${API_URL}/user/me`, {
       method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(userData)
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Не удалось обновить профиль');
+    }
+    
+    return await response.json();
+  }
+
+  // Обновить данные пользователя
+  async updateUser(userId: string, userData: UserUpdateDto): Promise<User> {
+    const accessToken = authService.getAccessToken();
+    
+    if (!accessToken) {
+      throw new Error('Пользователь не авторизован');
+    }
+    
+    const response = await fetch(`${API_URL}/user/${userId}`, {
+      method: 'PUT',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json'

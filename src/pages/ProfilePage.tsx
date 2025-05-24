@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import "../styles/ProfilePage.css";
 import { User } from "../types/user";
 import TrackList from "../components/TrackList";
@@ -13,6 +13,7 @@ import styled from 'styled-components';
 import { Track } from "../types/track";
 import trackService from "../services/trackService";
 import albumService from "../services/albumService";
+import ProfileEditModal from "../components/ProfileEditModal";
 
 const CreateAlbumButton = styled.button`
   padding: 0.5rem 1rem;
@@ -52,12 +53,14 @@ const EmptyStateText = styled.p`
 
 const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
-  const { userId } = useParams<{ userId: string }>();
+  const location = useLocation();
+  const { id } = useParams<{ id: string }>();
   const [user, setUser] = useState<User | null>(null);
   const [albums, setAlbums] = useState<Album[]>([]);
   const [tracks, setTracks] = useState<Track[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [showEditModal, setShowEditModal] = useState<boolean>(false);
 
   const handleTracksClick = () => {
     if (user?.id) {
@@ -80,67 +83,93 @@ const ProfilePage: React.FC = () => {
   };
 
   const handleEditProfile = () => {
-    console.log('Редактирование профиля');
+    setShowEditModal(true);
   };
+
+  const handleCloseModal = () => {
+    setShowEditModal(false);
+  };
+
+  const handleUserUpdated = (updatedUser: User) => {
+    setUser(updatedUser);
+  };
+
+  // Reset state when location changes
+  useEffect(() => {
+    console.log(`URL changed to: ${location.pathname}, with id param: ${id}`);
+    setUser(null);
+    setAlbums([]);
+    setTracks([]);
+    setLoading(true);
+    setError(null);
+  }, [location.pathname, id]);
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!loading) return; // Skip if not in loading state
+      
       try {
-        setLoading(true);
         setError(null);
+        console.log("Fetching user data...");
         
-        const isProfileMePath = window.location.pathname === '/profile/me';
-        
-        console.log("Fetching user data, userId:", userId);
-        
-        if (!userId && !isProfileMePath) {
-          // Проверяем, авторизован ли пользователь
-          if (!authService.isAuthenticated()) {
-            setError("Для просмотра профиля необходимо войти в систему");
-            setLoading(false);
-            return;
-          }
-          // Перенаправляем на страницу текущего пользователя
-          navigate('/profile/me', { replace: true });
+        // Check if user is authenticated
+        if (!authService.isAuthenticated()) {
+          setError("Для просмотра профиля необходимо войти в систему");
+          setLoading(false);
           return;
         }
-
-        // Если ID равен 'me' или мы на странице /profile/me, получаем информацию о текущем пользователе
+        
+        const isViewingOwnProfile = location.pathname === '/profile/me';
         let userData: User;
         
-        if (userId === 'me' || isProfileMePath) {
-          console.log("Loading current user data");
-          userData = await userService.getCurrentUser();
-          userData.isCurrentUser = true;
-        } else {
-          // Получаем информацию о другом пользователе
-          console.log(`Loading data for user ID: ${userId}`);
-          // Мы знаем, что userId здесь определен, т.к. предыдущие проверки пройдены
-          userData = await userService.getUserById(userId as string);
-          
-          // Проверяем, является ли этот пользователь текущим
-          const currentUserId = authService.getUserId();
-          if (currentUserId === userData.id) {
-            userData.isCurrentUser = true;
-          }
-        }
-        
-        console.log("User data loaded:", userData);
-        setUser(userData);
-        
+        // Step 1: First load the user data
         try {
-          const userTracks = await trackService.getTracksByAuthor(userData.id);
+          if (isViewingOwnProfile) {
+            // Loading current user profile (/profile/me route)
+            console.log("Loading current user profile");
+            const response = await userService.getCurrentUser();
+            // Check if response has a user property and extract the user data
+            // @ts-expect-error - Handle API response which might have nested user
+            userData = response.user ? response.user : response;
+            userData.isCurrentUser = true;
+          } else if (id) {
+            // Loading a specific user profile by ID
+            console.log(`Loading user profile with ID: ${id}`);
+            const response = await userService.getUserById(id);
+            // Check if response has a user property and extract the user data
+            // @ts-expect-error - Handle API response which might have nested user
+            userData = response.user ? response.user : response;
+            
+            // Check if this is actually the current user's profile
+            const currentUserId = authService.getUserId();
+            userData.isCurrentUser = currentUserId === userData.id;
+          } else {
+            // This should not happen with proper routing
+            throw new Error("Invalid profile URL");
+          }
+          
+          console.log("User data loaded successfully:", userData);
+          
+          // Set user immediately after loading
+          setUser(userData);
+          
+          // Step 2: Then load the user's content using the userData we just loaded
+          console.log(`Loading content for user ID: ${userData.id}`);
+          const [userTracks, userAlbums] = await Promise.all([
+            trackService.getTracksByAuthor(userData.id),
+            albumService.getAlbumsByAuthor(userData.id)
+          ]);
+          
+          console.log(`Loaded ${userTracks.length} tracks and ${userAlbums.length} albums`);
           setTracks(userTracks);
-
-          const userAlbums = await albumService.getAlbumsByAuthor(userData.id);
           setAlbums(userAlbums);
-
-        } catch (playlistError) {
-          console.error("Ошибка при загрузке плейлистов:", playlistError);
+          
+        } catch (userError) {
+          console.error("Error loading user data:", userError);
+          throw userError; // Rethrow to be caught by outer try/catch
         }
-        
       } catch (error) {
-        console.error("Ошибка при загрузке данных пользователя:", error);
+        console.error("Error in profile page:", error);
         setUser(null);
         setError("Не удалось загрузить профиль пользователя");
       } finally {
@@ -149,7 +178,7 @@ const ProfilePage: React.FC = () => {
     };
 
     fetchData();
-  }, [userId]);
+  }, [id, loading, location.pathname]);
 
   if (loading) {
     return <LoadingSpinner />;
@@ -180,7 +209,7 @@ const ProfilePage: React.FC = () => {
               <EmptyState>
                 <EmptyStateText>
                   {isCurrentUser 
-                    ? "У вас пока нет избранных треков" 
+                    ? "У вас пока нет треков" 
                     : "У этого пользователя нет загруженных треков"}
                 </EmptyStateText>
               </EmptyState>
@@ -218,6 +247,14 @@ const ProfilePage: React.FC = () => {
           )}
         </section>
       </div>
+
+      {showEditModal && user && (
+        <ProfileEditModal
+          user={user}
+          onClose={handleCloseModal}
+          onUserUpdated={handleUserUpdated}
+        />
+      )}
     </div>
   );
 };

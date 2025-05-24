@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { User } from '../types/user';
+import config from "../config";
 
 const UserHeaderContainer = styled.div`
   display: flex;
@@ -105,11 +106,12 @@ interface UserHeaderProps {
 }
 
 const UserHeader: React.FC<UserHeaderProps> = ({ user, onEditProfile }) => {
-  const avatarUrl = user.avatarUrl || 'https://via.placeholder.com/150';
   const isCurrentUser = user.isCurrentUser;
+  const avatarUrl = user.avatarUrl ? `${config.MEDIA_URL}/image/${user.avatarUrl}` : "https://placehold.co/400";
 
   return (
     <UserHeaderContainer>
+      
       <UserAvatar src={avatarUrl} alt={`Аватар ${user.name}`} />
       <UserInfo>
         <UserName>

@@ -26,7 +26,7 @@ class FileService {
       }
       
       const data = await response.json();
-      return data.url;
+      return data.avatarUrl || data.url || data.id;
     } catch (error) {
       console.error('Ошибка при загрузке изображения:', error);
       throw error;

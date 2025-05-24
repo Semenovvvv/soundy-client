@@ -2,6 +2,8 @@ import React from "react";
 import styled from "styled-components";
 import { User } from "../types/user";
 import { useNavigate } from "react-router-dom";
+import config from "../config";
+import authService from "../services/authService";
 
 const GridContainer = styled.div`
   display: grid;
@@ -51,7 +53,23 @@ const UserGrid: React.FC<UserGridProps> = ({ users }) => {
   const navigate = useNavigate();
 
   const handleUserClick = (userId: string) => {
-    navigate(`/user/${userId}`);
+    const currentUserId = authService.getUserId();
+    
+    console.log(`User clicked: ${userId}, Current user: ${currentUserId}`);
+    
+    if (currentUserId === userId) {
+      console.log('Navigating to own profile: /profile/me');
+      navigate('/profile/me');
+    } else {
+      console.log(`Navigating to user profile: /user/${userId}`);
+      navigate(`/user/${userId}`);
+    }
+  };
+
+  const formatAvatarUrl = (url: string | null | undefined): string => {
+    if (!url) return "https://placehold.co/400";
+    if (url.startsWith('http')) return url;
+    return `${config.MEDIA_URL}/image/${url}`;
   };
 
   return (
@@ -59,8 +77,8 @@ const UserGrid: React.FC<UserGridProps> = ({ users }) => {
       {users.map((user) => (
         <UserCard key={user.id}>
           <Avatar
-            src={user.avatarUrl || null}
-            onClick={() => handleUserClick(user.id)} // ← передаем id пользователя
+            src={formatAvatarUrl(user.avatarUrl)}
+            onClick={() => handleUserClick(user.id)}
           />
           <UserName>{user.name}</UserName>
         </UserCard>

@@ -1,11 +1,21 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
+import styled from 'styled-components';
 
-const EmptyState: React.FC = () => {
+interface EmptyStateProps {
+  children: ReactNode;
+}
+
+const Container = styled.div`
+  text-align: center;
+  padding: 2rem;
+  color: #aaa;
+`;
+
+const EmptyState: React.FC<EmptyStateProps> = ({ children }) => {
   return (
-    <div style={{ textAlign: 'center', padding: '2rem', color: '#aaa' }}>
-      <h3>Ничего не найдено</h3>
-      <p>Попробуйте изменить запрос.</p>
-    </div>
+    <Container>
+      <h3>{children}</h3>
+    </Container>
   );
 };
 

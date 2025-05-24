@@ -15,6 +15,7 @@ import CollectionPage from "./pages/CollectionPage";
 import AllPlaylistPage from "./pages/AllPlaylistPage";
 import PlaylistPage from "./pages/PlaylistPage";
 import CreateAlbumPage from "./pages/CreateAlbumPage";
+import HomePage from "./pages/HomePage";
 import AudioPlayer from "./components/AudioPlayer";
 import { AudioPlayerProvider, useAudioPlayer } from "./contexts/AudioPlayerContext";
 
@@ -23,6 +24,7 @@ const AppContent: React.FC = () => {
   const location = useLocation();
   const hideNavRoutes = ['/login', '/register'];
   const shouldShowNavBar = !hideNavRoutes.includes(location.pathname);
+  const shouldShowPlayer = !hideNavRoutes.includes(location.pathname);
   const { currentTrack } = useAudioPlayer();
 
   return (
@@ -34,6 +36,7 @@ const AppContent: React.FC = () => {
           <Route path="/register" element={<RegisterPage />} />
 
           <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<HomePage />} />
             <Route path="/user/:id" element={<ProfilePage />} />
             <Route path="/profile/me" element={<ProfilePage />} />
             <Route path="/user/:id/tracks" element={<AllTracksPage />} />
@@ -48,7 +51,7 @@ const AppContent: React.FC = () => {
           </Route>
         </Routes>
       </main>
-      {currentTrack && <AudioPlayer track={currentTrack} />}
+      {currentTrack && shouldShowPlayer && <AudioPlayer track={currentTrack} />}
     </>
   );
 };

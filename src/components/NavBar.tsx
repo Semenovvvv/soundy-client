@@ -1,6 +1,8 @@
 import React from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import authService from "../services/authService";
+import { useAudioPlayer } from "../contexts/AudioPlayerContext";
 
 const NavbarContainer = styled.nav`
   background-color: #121212;
@@ -59,6 +61,12 @@ const MenuLink = styled(NavLink)`
   }
 `;
 
+const ProfileSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+`;
+
 const ProfileLink = styled(Link)`
   color: white;
   text-decoration: none;
@@ -73,7 +81,37 @@ const ProfileLink = styled(Link)`
   }
 `;
 
+const LogoutButton = styled.button`
+  color: white;
+  font-size: 1rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 20px;
+  background-color: #e74c3c;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #c0392b;
+  }
+`;
+
 const NavBar: React.FC = () => {
+  const navigate = useNavigate();
+  const { setCurrentTrack } = useAudioPlayer();
+
+  const handleLogout = async () => {
+    try {
+      // Stop any playing track
+      setCurrentTrack(null);
+      
+      await authService.logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
+
   return (
     <NavbarContainer>
       <NavbarWrapper>
@@ -91,7 +129,10 @@ const NavBar: React.FC = () => {
           </MenuItem>
         </Menu>
 
-        <ProfileLink to="/profile/me">Мой профиль</ProfileLink>
+        <ProfileSection>
+          <ProfileLink to="/profile/me">Мой профиль</ProfileLink>
+          <LogoutButton onClick={handleLogout}>Выйти</LogoutButton>
+        </ProfileSection>
       </NavbarWrapper> 
     </NavbarContainer>
   );
