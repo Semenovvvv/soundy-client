@@ -13,8 +13,8 @@ const development: Config = {
 };
 
 const production: Config = {
-  API_URL: 'http://185.164.173.134:8085/api',
-  MEDIA_URL: 'http://185.164.173.134:8085/api/file'
+  API_URL: 'http://http://45.10.110.152/:8085/api',
+  MEDIA_URL: 'http://http://45.10.110.152/:8085/api/file'
 };
 
 // Determine the environment based on the URL or other environment variables
@@ -25,7 +25,7 @@ const isProduction = () => {
   }
   
   // Check if running on production URL
-  if (window.location.hostname === '185.164.173.134' || 
+  if (window.location.hostname === 'http://45.10.110.152/' || 
       !window.location.hostname.includes('localhost')) {
     return true;
   }
