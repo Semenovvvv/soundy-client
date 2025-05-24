@@ -110,10 +110,10 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, onEditProfile }) => {
 
   return (
     <UserHeaderContainer>
-      <UserAvatar src={avatarUrl} alt={`Аватар ${user.username}`} />
+      <UserAvatar src={avatarUrl} alt={`Аватар ${user.name}`} />
       <UserInfo>
         <UserName>
-          {user.username}
+          {user.name}
           {isCurrentUser && <CurrentUserBadge>Это вы</CurrentUserBadge>}
           {user.role && <UserRole>({user.role})</UserRole>}
         </UserName>

@@ -1,3 +1,5 @@
+import config from "../config";
+
 interface RegisterRequest {
   username: string;
   email: string;
@@ -23,7 +25,7 @@ interface LoginResponse {
   refreshToken: string;
 }
 
-const API_URL = 'http://localhost:8085/api'; // Убедитесь, что URL соответствует вашему API
+const API_URL = config.API_URL;
 
 class AuthService {
   // Вход пользователя (логин)

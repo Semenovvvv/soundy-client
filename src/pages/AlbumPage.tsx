@@ -5,6 +5,7 @@ import { Album } from '../types/album';
 import albumService from '../services/albumService';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import TrackList from "../components/TrackList";
+import config from "../config";
 
 const PageContainer = styled.div`
   padding: 2rem;
@@ -117,7 +118,7 @@ const AlbumPage: React.FC<AlbumPageProps> = ({ albumProp }) => {
   }
 
   // Format the album cover URL
-  const coverUrl = album.avatarUrl ? `http://localhost:8085/api/file/image/${album.avatarUrl}` : "https://placehold.co/400";
+  const coverUrl = album.avatarUrl ? `${config.MEDIA_URL}/image/${album.avatarUrl}` : "https://placehold.co/400";
 
   // Format the creation date
   const createdDate = typeof album.createdAt === 'string' 

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import { Track } from "../types/track";
+import config from "../config";
 
 const TrackContainer = styled.div`
   display: flex;
@@ -73,8 +74,7 @@ const TrackCard: React.FC<{ track: Track; onPlay: (trackId: string) => void }> =
   const [isLiked, setIsLiked] = useState(track.isLiked);
   const { id, title, user, duration, } = track;
 
-  const avatarUrl = track.avatarUrl ? `http://localhost:8085/api/file/image/${track.avatarUrl}` : "https://placehold.co/400";
-
+  const avatarUrl = track.avatarUrl ? `${config.MEDIA_URL}/image/${track.avatarUrl}` : "https://placehold.co/400";
 
   const handleLike = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();

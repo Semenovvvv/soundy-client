@@ -1,8 +1,8 @@
-import { mockAlbums } from "../mocks/albumMock";
 import { Album } from "../types/album";
 import authService from "./authService";
+import config from "../config";
 
-const API_URL = 'http://localhost:8085/api';
+const API_URL = config.API_URL;
 
 interface CreateAlbumRequest {
   title: string;
@@ -23,10 +23,6 @@ interface GetAlbumByIdResponse {
 }
 
 const albumService = {
-  getAlbumByIdMock: async (id: string): Promise<Album | null> => {
-    return mockAlbums.find((a) => a.id === id) || null;
-  },
-
   // Получение альбома по ID
   getAlbumById: async (id: string): Promise<Album | null> => {
     try {
@@ -45,19 +41,6 @@ const albumService = {
     }
   },
 
-  searchAlbumByName: async (name: string): Promise<Album[]> => {
-    if (!name.trim()) {
-      return mockAlbums;
-    }
-
-    const lowerCaseQuery = name.toLowerCase();
-
-    const filteredAlbums = mockAlbums.filter((album) =>
-      album.title.toLowerCase().includes(lowerCaseQuery)
-    );
-
-    return filteredAlbums;
-  },
 
   // Получение альбомов по ID автора
   getAlbumsByAuthor: async (authorId: string): Promise<Album[]> => {

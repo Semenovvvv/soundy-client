@@ -1,35 +1,58 @@
 // AllTracksPage.tsx
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { Track } from '../types/track';
 import '../styles/AllTrackPage.css';
+import trackService from '../services/trackService';
+import { LoadingSpinner } from '../components/LoadingSpinner';
+import TrackList from '../components/TrackList';
+
+interface LocationState {
+  tracks?: Track[];
+}
 
 const AllTracksPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
   const [tracks, setTracks] = useState<Track[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  //const [sortBy, setSortBy] = useState<'title' | 'artist' | 'duration'>('title');
+  const [error, setError] = useState<string | null>(null);
 
-  // Загрузка всех треков пользователя
+  // Load all tracks from the user
   useEffect(() => {
-    // Имитация API-запроса
-    setTimeout(() => {
-      const mockTracks: Track[] = [ { id: '1', title: 'Ночной драйв', userId: 'DJ Night', duration: 120, createdAt: null, avatarUrl: ""},
-        { id: '2', title: 'Городской ветер', userId: 'Urban Sounds', duration: 120, createdAt: null, avatarUrl: ""  },
-        { id: '3', title: 'Солнечное утро', userId: 'Morning Vibes', duration: 120, createdAt: null, avatarUrl: ""  },
-        { id: '4', title: 'Электро-ночь', userId: 'Neon Lights', duration: 120, createdAt: null, avatarUrl: ""  },
-        { id: '5', title: 'Морской бриз', userId: 'Ocean Waves', duration: 120, createdAt: null, avatarUrl: ""  },
-        { id: '6', title: 'Звёздная дорога', userId: 'Cosmic Sounds', duration: 120, createdAt: null, avatarUrl: ""  },
-        { id: '7', title: 'Горный воздух', userId: 'Mountain Echoes', duration: 120, createdAt: null, avatarUrl: ""  }
-      ];
-      
-      setTracks(mockTracks);
+    // If tracks were passed through navigation state, use them
+    const state = location.state as LocationState | undefined;
+    if (state?.tracks && state.tracks.length > 0) {
+      setTracks(state.tracks);
       setLoading(false);
-    }, 800);
-  }, [id]);
+      return;
+    }
+
+    // Otherwise fetch from API
+    const fetchTracks = async () => {
+      if (!id) return;
+      
+      try {
+        setLoading(true);
+        const userTracks = await trackService.getTracksByAuthor(id);
+        setTracks(userTracks);
+      } catch (err) {
+        console.error("Failed to fetch tracks:", err);
+        setError("Не удалось загрузить треки");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTracks();
+  }, [id, location.state]);
 
   if (loading) {
-    return <div className="loading">Загрузка треков...</div>;
+    return <LoadingSpinner />;
+  }
+
+  if (error) {
+    return <div className="error">{error}</div>;
   }
 
   return (
@@ -41,8 +64,6 @@ const AllTracksPage: React.FC = () => {
           <label htmlFor="sort-select">Сортировать по:</label>
           <select 
             id="sort-select"
-            //value={sortBy}
-            //onChange={(e) => setSortBy(e.target.value as any)}
             className="sort-select"
           >
             <option value="title">Названию</option>
@@ -52,26 +73,11 @@ const AllTracksPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="tracks-table">
-        <div className="table-header">
-          <span>Название</span>
-          <span>Исполнитель</span>
-          <span>Длительность</span>
-        </div>
-        
-        <div className="table-body">
-          {tracks.map((track) => (
-            <div key={track.id} className="track-row">
-              <span className="track-title">{track.title}</span>
-              <span className="track-artist">{track.userId}</span>
-              <span className="track-duration">{track.duration}</span>
-              <button className="play-button" aria-label="Воспроизвести">
-                ▶️
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
+      {tracks.length === 0 ? (
+        <div className="empty-state">У пользователя нет треков</div>
+      ) : (
+        <TrackList tracks={tracks} />
+      )}
     </div>
   );
 };

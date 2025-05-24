@@ -108,7 +108,7 @@ const PlaylistPage: React.FC = () => {
         <SectionTitle>Треки</SectionTitle>
         <TracksList>
           {playlist!.tracks?.map((track) => (
-            <TrackCard key={track.id} track={track} />
+            <TrackCard key={track.id} track={track} onPlay={() => {}} />
           ))}
         </TracksList>
       </TracksSection>

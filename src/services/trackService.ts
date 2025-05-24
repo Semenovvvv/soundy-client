@@ -1,9 +1,9 @@
-import { mockTracks } from "../mocks/trackMock";
 import { Track } from "../types/track";
 import { http } from "./http";
 import authService from "./authService";
+import config from "../config";
 
-const API_URL = 'http://localhost:8085/api';
+const API_URL = config.API_URL;
 
 interface CreateTrackRequest {
   title: string;
@@ -31,29 +31,6 @@ const trackService = {
     }
   },
 
-  getTrackByIdMock: async (id: string): Promise<Track | null> => {
-    return mockTracks.find((track) => track.id === id) || null;
-  },
-
-  getTracksByUserId: async (id: string): Promise<Track[]> => {
-    return mockTracks.filter((track) =>
-      track.author.id == id
-    );
-  },
-
-  searchTrackByNameMock: async (name: string): Promise<Track[]> => {
-    if (!name.trim()) {
-      return mockTracks;
-    }
-
-    const lowerCaseQuery = name.toLowerCase();
-
-    const filteredAlbums = mockTracks.filter((t) =>
-      t.title.toLowerCase().includes(lowerCaseQuery)
-    );
-
-    return filteredAlbums;
-  },
 
   // Создание нового трека
   createTrack: async (trackData: CreateTrackRequest): Promise<Track> => {

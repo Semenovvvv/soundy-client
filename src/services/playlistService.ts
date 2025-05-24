@@ -16,7 +16,7 @@ const playlistService = {
     const tracks: Track[] = rawPlaylist.tracks.map((track: Track) => ({
       id: track.id,
       title: track.title,
-      authorId: track.authorId,
+      authorId: track.user.id,
       albumId: track.albumId,
       createdAt: track.createdAt,
       duration: track.duration,
@@ -74,7 +74,7 @@ getPlaylistById: async (id : string) : Promise<Playlist> => {
     const tracks: Track[] = rawPlaylist.tracks.map((track: Track) => ({
       id: track.id,
       title: track.title,
-      authorId: track.authorId,
+      authorId: track.user.id,
       albumId: track.albumId,
       createdAt: track.createdAt,
       duration: track.duration,

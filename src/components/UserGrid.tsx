@@ -59,7 +59,7 @@ const UserGrid: React.FC<UserGridProps> = ({ users }) => {
       {users.map((user) => (
         <UserCard key={user.id}>
           <Avatar
-            src={user.avatarUrl}
+            src={user.avatarUrl || null}
             onClick={() => handleUserClick(user.id)} // ← передаем id пользователя
           />
           <UserName>{user.name}</UserName>

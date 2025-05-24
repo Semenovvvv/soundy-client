@@ -2,6 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { Album } from "../types/album";
 import { useNavigate } from "react-router-dom";
+import config from "../config";
 
 
 const AlbumContainer = styled.div`
@@ -54,7 +55,7 @@ const AlbumCard: React.FC<AlbumCardProps> = ({ album }) => {
 
   const { title } = album;
 
-  const coverUrl = album.avatarUrl ? `http://localhost:8085/api/file/image/${album.avatarUrl}` : "https://placehold.co/400";
+  const coverUrl = album.avatarUrl ? `${config.MEDIA_URL}/image/${album.avatarUrl}` : "https://placehold.co/400";
 
   const handleClick = (e: React.MouseEvent<HTMLImageElement>) => {
     e.preventDefault();

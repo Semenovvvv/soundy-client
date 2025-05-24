@@ -1,7 +1,8 @@
 import authService from './authService';
 import { User } from '../types/user';
+import config from "../config";
 
-const API_URL = 'http://localhost:8085/api';
+const API_URL = config.API_URL;
 
 class UserService {
   // Получить информацию о текущем пользователе

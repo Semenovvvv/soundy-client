@@ -60,11 +60,19 @@ const ProfilePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const handleTracksClick = () => {
-    navigate(`/user/${user?.id}/tracks`);
+    if (user?.id) {
+      navigate(`/user/${user.id}/tracks`, {
+        state: { tracks }
+      });
+    }
   };
 
   const handleAlbumsClick = () => {
-    navigate(`/user/${user?.id}/albums`);
+    if (user?.id) {
+      navigate(`/user/${user.id}/albums`, {
+        state: { albums }
+      });
+    }
   };
 
   const handleCreateAlbum = () => {

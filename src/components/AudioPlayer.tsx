@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Hls from 'hls.js';
 import styled from 'styled-components';
 import { Track } from '../types/track';
+import config from "../config";
 
 // ====== Styled Components ======
 
@@ -376,7 +377,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ track }) => {
       hlsRef.current = null;
     }
     
-    const streamUrl = `http://localhost:8085/api/file/track/${track.id}/index.m3u8`;
+    const streamUrl = `${config.MEDIA_URL}/track/${track.id}/index.m3u8`;
     
     if (Hls.isSupported()) {
       const hls = new Hls({
@@ -407,7 +408,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ track }) => {
         }
       });
 
-      hls.on(Hls.Events.ERROR, (event, data) => {
+      hls.on(Hls.Events.ERROR, (_, data) => {
         console.error("HLS error:", data);
         if (data.fatal) {
           switch(data.type) {
@@ -503,7 +504,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ track }) => {
 
   if (!track) return null;
 
-  const coverUrl = track.avatarUrl ? `http://localhost:8085/api/file/image/${track.avatarUrl}` : "https://placehold.co/400";
+  const coverUrl = track.avatarUrl ? `${config.MEDIA_URL}/image/${track.avatarUrl}` : "https://placehold.co/400";
   
   return (
     <PlayerContainer>

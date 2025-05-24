@@ -1,4 +1,4 @@
-import { Config } from "../config";
+import config from "../config";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -20,7 +20,7 @@ async function request<T>(
     options.body = JSON.stringify(data);
   }
 
-  const response = await fetch(`${Config.apiUrl}${url}`, options);
+  const response = await fetch(`${config.API_URL}${url}`, options);
 
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);

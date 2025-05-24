@@ -6,8 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:prod": "tsc -b && vite build --mode production",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "chmod +x ./deploy.sh && ./deploy.sh"
   },
   "dependencies": {
     "hls.js": "^1.6.2",

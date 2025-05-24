@@ -5,10 +5,7 @@ import CategoryButtons from "../components/Search/CategoryButtons";
 import SearchBar from "../components/Search/SearchBar";
 import TrackList from "../components/TrackList";
 import AlbumGrid from "../components/AlbumGrid";
-import trackService from "../services/trackService";
-import albumService from "../services/albumService";
 import UserGrid from "../components/UserGrid";
-import userService from "../services/userService";
 
 const SearchPage: React.FC = () => {
   const [query, setQuery] = useState<string>("");
@@ -30,20 +27,16 @@ const SearchPage: React.FC = () => {
   
       switch (selectedCategory) {
         case "Треки":
-          filteredResults = await trackService.searchTrackByNameMock(query);
           break;
   
         case "Альбомы":
-          filteredResults = await albumService.searchAlbumByName(query);
           break;
   
         case "Пользователи":
-          filteredResults = await userService.searchByNameMock(query);
           break;
   
-        // case "Плейлисты":
-        //   filteredResults = await playlistService.searchPlaylistByName(query);
-        //   break;
+        case "Плейлисты":
+          break;
   
         default:
           filteredResults = [];

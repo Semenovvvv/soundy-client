@@ -6,6 +6,7 @@ import { Track } from '../../types/track';
 import { Album } from '../../types/album';
 import { Playlist } from '../../types/playlist';
 import { User } from '../../types/user';
+import config from "../../config";
 
 const CardContainer = styled(Link)`
   display: flex;
@@ -52,7 +53,7 @@ const formatAvatarUrl = (url: string | null | undefined): string => {
   
   return url.startsWith('http') 
     ? url 
-    : `http://localhost:8085/api/file/${url}`;
+    : `${config.MEDIA_URL}/${url}`;
 };
 
 const SearchResultCard: React.FC<{
