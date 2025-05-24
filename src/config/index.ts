@@ -13,8 +13,8 @@ const development: Config = {
 };
 
 const production: Config = {
-  API_URL: 'http://http://45.10.110.152/:8085/api',
-  MEDIA_URL: 'http://http://45.10.110.152/:8085/api/file'
+  API_URL: 'http://45.10.110.152:8085/api',
+  MEDIA_URL: 'http://45.10.110.152:8085/api/file'
 };
 
 // Determine the environment based on the URL or other environment variables
