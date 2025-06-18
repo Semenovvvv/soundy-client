@@ -22,11 +22,17 @@ const PlayerContainer = styled.div`
   align-items: center;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
   z-index: 1000;
+  /* Ensure player doesn't block scrolling */
+  height: auto;
+  max-height: 90px;
+  /* Add smooth transition */
+  transition: transform 0.3s ease-in-out;
   
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
     padding: 0.8rem;
     gap: 0.8rem;
+    max-height: 160px;
   }
 `;
 
@@ -279,6 +285,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ track }) => {
   const [volume, setVolume] = useState(0.7);
   const [bufferedProgress, setBufferedProgress] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
+
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const hlsRef = useRef<Hls | null>(null);
@@ -550,6 +557,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ track }) => {
   
   return (
     <PlayerContainer>
+      
       <TrackSection>
         <CoverArt>
           <img src={coverUrl} alt={track.title} />

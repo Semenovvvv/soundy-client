@@ -4,18 +4,24 @@ body {
   box-sizing: border-box;
   background-color: #202020;
   color: white;
+  /* Enable smooth scrolling for better experience */
+  scroll-behavior: smooth;
 }
 
 main {
   padding-top: 75px;
-  padding-bottom: 50px; 
-  min-height: calc(100vh - 75px - 90px);
+  /* Increase padding to ensure content isn't hidden behind the player */
+  padding-bottom: 120px; 
+  min-height: calc(100vh - 75px - 120px);
   box-sizing: border-box;
+  /* Allow overflow scrolling */
+  overflow-y: auto;
 }
 
 @media (max-width: 700px) {
   main {
-    padding-bottom: 180px;
-    min-height: calc(100vh - 75px - 180px);
+    /* Increase padding for mobile to account for larger player height */
+    padding-bottom: 200px;
+    min-height: calc(100vh - 75px - 200px);
   }
 }

@@ -73,7 +73,7 @@ const LoginPage: React.FC = () => {
       });
       
       // Redirect user to home or collection
-      navigate('/collection');
+      navigate('/');
       
     } catch (err: unknown) {
       console.error('Login error:', err);

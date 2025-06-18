@@ -2,7 +2,7 @@
 import styled from "styled-components";
 import { Track } from "../types/track";
 import config from "../config";
-import { useAuth } from "../contexts/AuthContext";
+// import { useAuth } from "../contexts/AuthContext";
 // import trackService from "../services/trackService";
 // import Toast from "./Toast";
 
@@ -74,20 +74,20 @@ const Controls = styled.div`
 //   }
 // `;
 
-const ActionButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 18px;
-  color: #929292;
-  outline: none;
-  transition: color 0.3s ease;
-  &:hover {
-    color: #ff4d4d;
-  }
-  &:focus{
-    outline: none;
-  }
-`;
+// const ActionButton = styled.button`
+//   background: none;
+//   border: none;
+//   font-size: 18px;
+//   color: #929292;
+//   outline: none;
+//   transition: color 0.3s ease;
+//   &:hover {
+//     color: #ff4d4d;
+//   }
+//   &:focus{
+//     outline: none;
+//   }
+// `;
 
 const Duration = styled.span`
   font-size: 16px;
@@ -121,14 +121,14 @@ interface TrackCardProps {
 const TrackCard: React.FC<TrackCardProps> = ({ 
   track, 
   onPlay, 
-  onDelete,
-  showDeleteButton = false 
+  // onDelete,
+  // showDeleteButton = false 
 }) => {
   //const [isLiked, setIsLiked] = useState(track.isLiked);
   // const [showToast, setShowToast] = useState(false);
   // const [toastMessage, setToastMessage] = useState("");
   const { id, title, user, duration, } = track;
-  const { user: currentUser } = useAuth();
+  // const { user: currentUser } = useAuth();
 
   const avatarUrl = track.avatarUrl ? `${config.MEDIA_URL}/image/${track.avatarUrl}` : "https://placehold.co/400";
 
@@ -163,17 +163,17 @@ const TrackCard: React.FC<TrackCardProps> = ({
     onPlay(id);
   };
 
-  const handleDelete = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    if (onDelete) {
-      onDelete(id);
-    }
-  };
+  // const handleDelete = (e: React.MouseEvent<HTMLButtonElement>) => {
+  //   e.stopPropagation();
+  //   if (onDelete) {
+  //     onDelete(id);
+  //   }
+  // };
 
   // Проверяем, имеет ли пользователь право удалять трек
   // (если это автор трека или если пользователь владелец альбома)
-  const canDelete = showDeleteButton && currentUser && 
-    (currentUser.id === track.userId || currentUser.id === track.albumOwnerId);
+  // const canDelete = showDeleteButton && currentUser && 
+  //   (currentUser.id === track.userId || currentUser.id === track.albumOwnerId);
 
   return (
     <>
@@ -193,11 +193,11 @@ const TrackCard: React.FC<TrackCardProps> = ({
             <HeartIcon isLiked={isLiked} />
           </LikeButton> */}
           <Duration>{formatDuration(duration)}</Duration>
-          {canDelete && (
+          {/* {canDelete && (
             <ActionButton onClick={handleDelete} title="Удалить трек">
               🗑️
             </ActionButton>
-          )}
+          )} */}
         </Controls>
       </TrackContainer>
       
