@@ -8,6 +8,7 @@ export type Track = {
     userId: string;
     album: Album;
     albumId: string;
+    albumOwnerId?: string;
     isLiked: boolean;
     duration: number;
     createdAt: Date;

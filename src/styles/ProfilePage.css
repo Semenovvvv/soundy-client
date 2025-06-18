@@ -1,9 +1,9 @@
 .profile-container {
   display: flex;
   flex-direction: column;
-  padding: 2rem 1rem;
-  margin-left: 12rem;
-  margin-right: 12rem;
+  /* padding: 2rem 1rem; */
+  /* margin-left: 12rem;
+  margin-right: 12rem; */
 }
 
 .profile-content {
@@ -56,5 +56,5 @@
 
 .playlists,
 .tracks{
-  margin: 0 4rem 2rem 4rem;
+  margin: 0 2rem 2rem 2rem;
 }

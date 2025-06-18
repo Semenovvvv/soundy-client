@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthCard, AuthContainer, Subtitle, Title } from '../components/Auth/AuthContainer';
 import FormInput from '../components/Auth/FormInput';
-import authService from '../services/authService';
+import { useAuth } from '../contexts/AuthContext';
 import styled from 'styled-components';
 
 const Button = styled.button`
@@ -52,41 +52,35 @@ const LoginPage: React.FC = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
     if (!username || !password) {
-      setError('Пожалуйста, заполните все поля');
+      setError('Please fill in all fields');
       return;
     }
     
     try {
       setIsLoading(true);
       
-      // Отправляем запрос на вход
-      const response = await authService.login({
+      // Using the login method from AuthContext
+      await login({
         username,
         password
       });
       
-      // Сохраняем токены и ID пользователя в localStorage
-      authService.saveAuth(
-        response.userId,
-        response.accessToken,
-        response.refreshToken
-      );
-      
-      // Перенаправляем пользователя на главную или на коллекцию
+      // Redirect user to home or collection
       navigate('/collection');
       
     } catch (err: unknown) {
-      console.error('Ошибка входа:', err);
+      console.error('Login error:', err);
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError('Произошла ошибка при входе');
+        setError('An error occurred during login');
       }
     } finally {
       setIsLoading(false);
@@ -96,33 +90,33 @@ const LoginPage: React.FC = () => {
   return (
     <AuthContainer>
       <AuthCard>
-        <Title>Вход</Title>
-        <Subtitle>Добро пожаловать обратно!</Subtitle>
+        <Title>Login</Title>
+        <Subtitle>Welcome back!</Subtitle>
         
         {error && <ErrorMessage>{error}</ErrorMessage>}
         
         <form onSubmit={handleLogin}>
           <FormInput
-            label="Имя пользователя"
+            label="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
           />
           <FormInput
-            label="Пароль"
+            label="Password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
           <Button type="submit" disabled={isLoading}>
-            {isLoading ? 'Выполняется вход...' : 'Войти'}
+            {isLoading ? 'Logging in...' : 'Login'}
           </Button>
         </form>
         <p style={{ textAlign: 'center', marginTop: '1.5rem' }}>
-          Нет аккаунта?{' '}
+          Don't have an account?{' '}
           <LoginLink to="/register">
-            Зарегистрироваться
+            Register
           </LoginLink>
         </p>
       </AuthCard>

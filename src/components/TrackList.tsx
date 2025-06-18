@@ -9,7 +9,17 @@ const TracksContainer = styled.div`
   flex-direction: column;
 `;
 
-const TrackList: React.FC<{ tracks: Track[] | undefined }> = ({ tracks }) => {
+interface TrackListProps {
+  tracks: Track[] | undefined;
+  onDeleteTrack?: (trackId: string) => void;
+  showDeleteButton?: boolean;
+}
+
+const TrackList: React.FC<TrackListProps> = ({ 
+  tracks, 
+  onDeleteTrack,
+  showDeleteButton = false
+}) => {
   const { playTrackById } = useTrackPlayer();
 
   const handlePlayTrack = (trackId: string) => {
@@ -23,7 +33,13 @@ const TrackList: React.FC<{ tracks: Track[] | undefined }> = ({ tracks }) => {
   return (
     <TracksContainer>
       {tracks.map((track) => (
-        <TrackCard track={track} key={track.id} onPlay={handlePlayTrack} />
+        <TrackCard 
+          track={track} 
+          key={track.id} 
+          onPlay={handlePlayTrack} 
+          onDelete={onDeleteTrack}
+          showDeleteButton={showDeleteButton}
+        />
       ))}
     </TracksContainer>
   );

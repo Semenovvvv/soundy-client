@@ -38,4 +38,4 @@ export const AudioPlayerProvider: React.FC<AudioPlayerProviderProps> = ({ childr
       {children}
     </AudioPlayerContext.Provider>
   );
-}; 
+};

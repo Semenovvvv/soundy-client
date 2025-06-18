@@ -1,9 +1,50 @@
 // pages/RegisterPage.tsx
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { AuthContainer, AuthCard, Title, Subtitle } from '../components/Auth/AuthContainer';
 import FormInput from '../components/Auth/FormInput';
-import authService from '../services/authService';
+import { useAuth } from '../contexts/AuthContext';
+import styled from 'styled-components';
+
+const Button = styled.button`
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #1db954;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: all 0.2s;
+  
+  &:hover {
+    background-color: #1ed760;
+    transform: translateY(-2px);
+  }
+  
+  &:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    transform: none;
+  }
+`;
+
+const ErrorMessage = styled.div`
+  color: #ff3030;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  background: rgba(255, 0, 0, 0.07);
+  border-radius: 4px;
+`;
+
+const LoginLink = styled(Link)`
+  color: #1db954;
+  text-decoration: underline;
+  
+  &:hover {
+    text-decoration: none;
+  }
+`;
 
 const RegisterPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -14,54 +55,48 @@ const RegisterPage: React.FC = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { register } = useAuth();
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
-    // Валидация
+    // Validation
     if (!username || !email || !password || !confirmPassword) {
-      setError('Пожалуйста, заполните все обязательные поля');
+      setError('Please fill in all required fields');
       return;
     }
 
     if (password !== confirmPassword) {
-      setError('Пароли не совпадают');
+      setError('Passwords do not match');
       return;
     }
 
     if (password.length < 4) {
-      setError('Пароль должен быть не менее 4 символов');
+      setError('Password must be at least 4 characters long');
       return;
     }
 
     try {
       setIsLoading(true);
       
-      // Отправляем запрос на регистрацию
-      const response = await authService.register({
+      // Using the register method from AuthContext
+      await register({
         username,
         email,
         password,
         bio
       });
       
-      // Сохраняем токены и ID пользователя
-      authService.saveAuth(
-        response.userId,
-        response.accessToken,
-        response.refreshToken
-      );
-      
-      // Перенаправляем пользователя на главную
+      // Redirect user to home page
       navigate('/collection');
       
     } catch (err: unknown) {
-      console.error('Ошибка регистрации:', err);
+      console.error('Registration error:', err);
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError('Произошла неизвестная ошибка при регистрации');
+        setError('An unknown error occurred during registration');
       }
     } finally {
       setIsLoading(false);
@@ -71,22 +106,14 @@ const RegisterPage: React.FC = () => {
   return (
     <AuthContainer>
       <AuthCard>
-        <Title>Регистрация</Title>
-        <Subtitle>Создайте свой аккаунт</Subtitle>
-        {error && (
-          <div style={{ 
-            color: '#ff3030', 
-            padding: '0.5rem', 
-            marginBottom: '1rem',
-            background: 'rgba(255, 0, 0, 0.07)',
-            borderRadius: '4px' 
-          }}>
-            {error}
-          </div>
-        )}
+        <Title>Register</Title>
+        <Subtitle>Create your account</Subtitle>
+        
+        {error && <ErrorMessage>{error}</ErrorMessage>}
+        
         <form onSubmit={handleRegister}>
           <FormInput
-            label="Имя пользователя"
+            label="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
@@ -99,47 +126,34 @@ const RegisterPage: React.FC = () => {
             required
           />
           <FormInput
-            label="Пароль"
+            label="Password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
           <FormInput
-            label="Подтвердите пароль"
+            label="Confirm Password"
             type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
           />
           <FormInput
-            label="О себе (необязательно)"
+            label="Bio (optional)"
             value={bio}
             onChange={(e) => setBio(e.target.value)}
-            placeholder="Расскажите немного о себе"
+            placeholder="Tell us a bit about yourself"
           />
-          <button
-            type="submit"
-            disabled={isLoading}
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              backgroundColor: isLoading ? '#cccccc' : '#1db954',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: isLoading ? 'not-allowed' : 'pointer',
-              marginTop: '1rem',
-            }}
-          >
-            {isLoading ? 'Регистрация...' : 'Зарегистрироваться'}
-          </button>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? 'Registering...' : 'Register'}
+          </Button>
         </form>
         <p style={{ textAlign: 'center', marginTop: '1.5rem' }}>
-          Уже есть аккаунт?{' '}
-          <a href="/login" style={{ color: '#1db954', textDecoration: 'underline' }}>
-            Войти
-          </a>
+          Already have an account?{' '}
+          <LoginLink to="/login">
+            Login
+          </LoginLink>
         </p>
       </AuthCard>
     </AuthContainer>

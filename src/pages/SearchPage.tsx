@@ -13,10 +13,7 @@ import { Playlist } from "../types/playlist";
 import styled from "styled-components";
 import EmptyState from "../components/Search/EmptyState";
 import SearchResultCard from "../components/Search/SearchResultCard";
-
-const Container = styled.div`
-  padding: 2rem;
-`;
+import PageLayout from "../components/PageLayout";
 
 const PlaylistResults = styled.div`
   display: flex;
@@ -137,14 +134,14 @@ const SearchPage: React.FC = () => {
   };
 
   return (
-    <Container>
+    <PageLayout>
       <SearchBar onSearch={handleSearch} />
       <CategoryButtons
         categories={["Треки", "Пользователи", "Альбомы", "Плейлисты"]}
         onSelectCategory={setSelectedCategory}
       />
       <div className="search-results">{renderResults()}</div>
-    </Container>
+    </PageLayout>
   );
 };
 

@@ -1,4 +1,4 @@
-import config from "../config";
+import { http } from './http';
 
 interface RegisterRequest {
   username: string;
@@ -25,89 +25,45 @@ interface LoginResponse {
   refreshToken: string;
 }
 
-const API_URL = config.API_URL;
+interface RefreshTokenResponse {
+  accessToken: string;
+  refreshToken: string;
+  userId: string;
+}
 
 class AuthService {
-  // Вход пользователя (логин)
+  // Login user
   async login(loginData: LoginRequest): Promise<LoginResponse> {
     try {
-      console.log('Отправка запроса авторизации:', `${API_URL}/auth/signin`);
-      const response = await fetch(`${API_URL}/auth/signin`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(loginData),
-      });
-
-      // Проверка типа контента ответа
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        const text = await response.text();
-        console.error('Ошибка API (не JSON):', text.substring(0, 100) + '...');
-        throw new Error(`Сервер вернул неверный формат данных: ${contentType || 'неизвестный формат'}`);
-      }
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Ошибка авторизации');
-      }
-
-      return await response.json();
+      return await http.post<LoginResponse>('/auth/signin', loginData, true);
     } catch (error) {
-      console.error('Ошибка при выполнении запроса login:', error);
+      console.error('Login error:', error);
       throw error;
     }
   }
 
-  // Регистрация пользователя
+  // Register user
   async register(registerData: RegisterRequest): Promise<RegisterResponse> {
-    const response = await fetch(`${API_URL}/auth/signup`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(registerData),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Произошла ошибка при регистрации');
+    try {
+      return await http.post<RegisterResponse>('/auth/signup', registerData, true);
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
     }
-
-    return await response.json();
   }
 
-  // Сохранение токенов в localStorage
-  saveAuth(userId: string, accessToken: string, refreshToken: string): void {
-    localStorage.setItem('userId', userId);
-    localStorage.setItem('accessToken', accessToken);
-    localStorage.setItem('refreshToken', refreshToken);
+  // Refresh token
+  async refreshToken(refreshToken: string): Promise<RefreshTokenResponse> {
+    try {
+      return await http.post<RefreshTokenResponse>('/auth/refresh-token', { refreshToken }, true);
+    } catch (error) {
+      console.error('Token refresh error:', error);
+      this.removeAuth();
+      throw error;
+    }
   }
 
-  // Удаление токенов (используется при выходе)
-  removeAuth(): void {
-    localStorage.removeItem('userId');
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-  }
-
-  // Проверка авторизации
-  isAuthenticated(): boolean {
-    return !!localStorage.getItem('accessToken');
-  }
-
-  // Получение текущего токена
-  getAccessToken(): string | null {
-    return localStorage.getItem('accessToken');
-  }
-
-  // Получение ID пользователя
-  getUserId(): string | null {
-    return localStorage.getItem('userId');
-  }
-
-  // Logout user (sign out)
+  // Logout user
   async logout(): Promise<void> {
     try {
       const refreshToken = localStorage.getItem('refreshToken');
@@ -118,26 +74,48 @@ class AuthService {
         return;
       }
       
-      const response = await fetch(`${API_URL}/auth/signout`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ refreshToken }),
-      });
-      
-      if (!response.ok) {
-        console.error('Error during logout:', response.status);
-      }
-      
-      // Always clear local auth data, even if the request fails
+      await http.post('/auth/signout', { refreshToken });
       this.removeAuth();
     } catch (error) {
-      console.error('Error during logout:', error);
+      console.error('Logout error:', error);
       // Still remove auth data even if the request fails
       this.removeAuth();
       throw error;
     }
+  }
+
+  // Save tokens to localStorage
+  saveAuth(userId: string, accessToken: string, refreshToken: string): void {
+    localStorage.setItem('userId', userId);
+    localStorage.setItem('accessToken', accessToken);
+    localStorage.setItem('refreshToken', refreshToken);
+  }
+
+  // Remove tokens from localStorage
+  removeAuth(): void {
+    localStorage.removeItem('userId');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+  }
+
+  // Check if user is authenticated
+  isAuthenticated(): boolean {
+    return !!localStorage.getItem('accessToken');
+  }
+
+  // Get access token
+  getAccessToken(): string | null {
+    return localStorage.getItem('accessToken');
+  }
+
+  // Get refresh token
+  getRefreshToken(): string | null {
+    return localStorage.getItem('refreshToken');
+  }
+
+  // Get user ID
+  getUserId(): string | null {
+    return localStorage.getItem('userId');
   }
 }
 

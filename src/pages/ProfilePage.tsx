@@ -14,6 +14,63 @@ import { Track } from "../types/track";
 import trackService from "../services/trackService";
 import albumService from "../services/albumService";
 import ProfileEditModal from "../components/ProfileEditModal";
+import PageLayout from "../components/PageLayout";
+
+const ProfileContainer = styled.div`
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+`;
+
+const ProfileContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+`;
+
+const Section = styled.section`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const SectionHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0rem;
+`;
+
+const ViewAllButton = styled.h2`
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.3s ease;
+  position: relative;
+  margin: 0;
+  font-size: 1.7rem;
+  color: #fff;
+
+  &:hover {
+    color: #1ed760;
+  }
+`;
+
+const Arrow = styled.span`
+  display: inline-block;
+  transition: transform 0.3s ease;
+
+  ${ViewAllButton}:hover & {
+    transform: translateX(4px);
+  }
+`;
+
+const TracksGrid = styled.div`
+  display: grid;
+  gap: 1rem;
+`;
 
 const CreateAlbumButton = styled.button`
   padding: 0.5rem 1rem;
@@ -31,13 +88,6 @@ const CreateAlbumButton = styled.button`
   }
 `;
 
-const SectionHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-`;
-
 const EmptyState = styled.div`
   text-align: center;
   padding: 2rem;
@@ -49,6 +99,15 @@ const EmptyState = styled.div`
 const EmptyStateText = styled.p`
   color: #aaa;
   margin-bottom: 1rem;
+`;
+
+const ErrorMessage = styled.div`
+  color: #e74c3c;
+  text-align: center;
+  padding: 1rem;
+  background-color: rgba(231, 76, 60, 0.1);
+  border-radius: 4px;
+  margin: 1rem 0;
 `;
 
 const ProfilePage: React.FC = () => {
@@ -185,77 +244,79 @@ const ProfilePage: React.FC = () => {
   }
 
   if (error || !user) {
-    return <div className="error">{error || "Пользователь не найден"}</div>;
+    return <ErrorMessage>{error || "Пользователь не найден"}</ErrorMessage>;
   }
 
   const isCurrentUser = user.isCurrentUser;
 
   return (
-    <div className="profile-container">
-      <UserHeader user={user} onEditProfile={isCurrentUser ? handleEditProfile : undefined} />
+    <PageLayout>
+      <ProfileContainer>
+        <UserHeader user={user} onEditProfile={isCurrentUser ? handleEditProfile : undefined} />
 
-      <div className="profile-content">
-        <section className="tracks">
-          <div className="section-header">
-            <h2 className="view-all-btn" onClick={handleTracksClick}>
-              Треки <span className="arrow">→</span>
-            </h2>
-          </div>
+        <ProfileContent>
+          <Section>
+            <SectionHeader>
+              <ViewAllButton onClick={handleTracksClick}>
+                Треки <Arrow>→</Arrow>
+              </ViewAllButton>
+            </SectionHeader>
 
-          <div className="tracks-grid">{
-            tracks.length > 0 ? (
-              <TrackList tracks={tracks.slice(0,5)} />
+            <TracksGrid>
+              {tracks.length > 0 ? (
+                <TrackList tracks={tracks.slice(0,5)} />
+              ) : (
+                <EmptyState>
+                  <EmptyStateText>
+                    {isCurrentUser 
+                      ? "У вас пока нет треков" 
+                      : "У этого пользователя нет загруженных треков"}
+                  </EmptyStateText>
+                </EmptyState>
+              )}
+            </TracksGrid>
+          </Section>
+
+          <Section>
+            <SectionHeader>
+              <ViewAllButton onClick={handleAlbumsClick}>
+                Альбомы <Arrow>→</Arrow>
+              </ViewAllButton>
+              {isCurrentUser && (
+                <CreateAlbumButton onClick={handleCreateAlbum}>
+                  Создать альбом
+                </CreateAlbumButton>
+              )}
+            </SectionHeader>
+
+            {albums && albums.length > 0 ? (
+              <HorizontalAlbumRow albums={albums} />
             ) : (
               <EmptyState>
                 <EmptyStateText>
                   {isCurrentUser 
-                    ? "У вас пока нет треков" 
-                    : "У этого пользователя нет загруженных треков"}
+                    ? "У вас пока нет альбомов" 
+                    : "У этого пользователя нет альбомов"}
                 </EmptyStateText>
+                {isCurrentUser && (
+                  <CreateAlbumButton onClick={handleCreateAlbum}>
+                    Создать первый альбом
+                  </CreateAlbumButton>
+                )}
               </EmptyState>
             )}
-          </div>
-        </section>
+          </Section>
+        </ProfileContent>
 
-        <section className="playlists">
-          <SectionHeader>
-            <h2 className="view-all-btn" onClick={handleAlbumsClick}>
-              Альбомы <span className="arrow">→</span>
-            </h2>
-            {isCurrentUser && (
-              <CreateAlbumButton onClick={handleCreateAlbum}>
-                Создать альбом
-              </CreateAlbumButton>
-            )}
-          </SectionHeader>
-
-          {albums && albums.length > 0 ? (
-            <HorizontalAlbumRow albums={albums} />
-          ) : (
-            <EmptyState>
-              <EmptyStateText>
-                {isCurrentUser 
-                  ? "У вас пока нет альбомов" 
-                  : "У этого пользователя нет альбомов"}
-              </EmptyStateText>
-              {isCurrentUser && (
-                <CreateAlbumButton onClick={handleCreateAlbum}>
-                  Создать первый альбом
-                </CreateAlbumButton>
-              )}
-            </EmptyState>
-          )}
-        </section>
-      </div>
-
-      {showEditModal && user && (
-        <ProfileEditModal
-          user={user}
-          onClose={handleCloseModal}
-          onUserUpdated={handleUserUpdated}
-        />
-      )}
-    </div>
+        {showEditModal && user && (
+          <ProfileEditModal
+            user={user}
+            onClose={handleCloseModal}
+            onUserUpdated={handleUserUpdated}
+          />
+        )}
+      </ProfileContainer>
+    </PageLayout>
   );
 };
 

@@ -250,11 +250,12 @@ const CreateAlbumPage: React.FC = () => {
     }
   };
 
-  const handleCoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCoverImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      setCoverImage(file);
-      setCoverImagePreview(URL.createObjectURL(file));
+      const resizedFile = await resizeImage(file, 200, 200);
+      setCoverImage(resizedFile);
+      setCoverImagePreview(URL.createObjectURL(resizedFile));
       
       if (errors.coverImage) {
         const newErrors = { ...errors };
@@ -511,6 +512,27 @@ const CreateAlbumPage: React.FC = () => {
       </FormContainer>
     </PageContainer>
   );
+};
+
+const resizeImage = async (file: File, width: number, height: number): Promise<File> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = async () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(img, 0, 0, width, height);
+      canvas.toBlob((blob) => {
+        if (blob) {
+          resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+        } else {
+          resolve(file);  // Fallback if blob fails
+        }
+      }, 'image/jpeg');
+    };
+    img.src = URL.createObjectURL(file);
+  });
 };
 
 export default CreateAlbumPage; 

@@ -1,8 +1,6 @@
 import { Album } from "../types/album";
+import { http } from "./http";
 import authService from "./authService";
-import config from "../config";
-
-const API_URL = config.API_URL;
 
 interface CreateAlbumRequest {
   title: string;
@@ -26,14 +24,7 @@ const albumService = {
   // Получение альбома по ID
   getAlbumById: async (id: string): Promise<Album | null> => {
     try {
-      const response = await fetch(`${API_URL}/album/${id}`);
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Ошибка при получении альбома');
-      }
-      
-      const data = await response.json() as GetAlbumByIdResponse;
+      const data = await http.get<GetAlbumByIdResponse>(`/album/${id}`);
       return data.album || null;
     } catch (error) {
       console.error('Ошибка при получении альбома:', error);
@@ -41,18 +32,10 @@ const albumService = {
     }
   },
 
-
   // Получение альбомов по ID автора
   getAlbumsByAuthor: async (authorId: string): Promise<Album[]> => {
     try {
-      const response = await fetch(`${API_URL}/album/author/${authorId}`);
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Ошибка при получении альбомов');
-      }
-      
-      const data = await response.json() as GetAlbumsByAuthorResponse;
+      const data = await http.get<GetAlbumsByAuthorResponse>(`/album/author/${authorId}`);
       return data.albums || [];
     } catch (error) {
       console.error('Ошибка при получении альбомов:', error);
@@ -63,12 +46,6 @@ const albumService = {
   // Создание нового альбома
   createAlbum: async (albumData: CreateAlbumRequest): Promise<Album> => {
     try {
-      const accessToken = authService.getAccessToken();
-      
-      if (!accessToken) {
-        throw new Error('Пользователь не авторизован');
-      }
-
       // Если ID автора не передан, используем ID текущего пользователя
       if (!albumData.authorId) {
         const userId = authService.getUserId();
@@ -77,21 +54,7 @@ const albumService = {
         }
       }
       
-      const response = await fetch(`${API_URL}/album`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(albumData)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Ошибка при создании альбома');
-      }
-      
-      const data = await response.json() as CreateAlbumResponse;
+      const data = await http.post<CreateAlbumResponse>('/album', albumData);
       return data.album;
     } catch (error) {
       console.error('Ошибка при создании альбома:', error);

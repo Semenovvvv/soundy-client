@@ -1,13 +1,10 @@
 import { Track } from "../types/track";
 import { http } from "./http";
 import authService from "./authService";
-import config from "../config";
-
-const API_URL = config.API_URL;
 
 interface CreateTrackRequest {
   title: string;
-  authorId?: string; // Если не указан, API должен использовать текущего пользователя
+  authorId?: string;
   albumId: string;
   duration: number;
   avatarUrl: string;
@@ -21,27 +18,25 @@ interface TracksResponse {
   tracks: Track[];
 }
 
+interface LikeTrackResponse {
+  success: boolean;
+  track: Track;
+}
+
 const trackService = {
   getTrackById: async (id: string): Promise<Track | null> => {
     try {
       return await http.get<Track>(`/tracks/${id}`);
     } catch {
-      console.warn(`Ошибка загрузки трека с ID ${id}`);
+      console.warn(`Error loading track with ID ${id}`);
       return null;
     }
   },
 
-
-  // Создание нового трека
+  // Create new track
   createTrack: async (trackData: CreateTrackRequest): Promise<Track> => {
     try {
-      const accessToken = authService.getAccessToken();
-      
-      if (!accessToken) {
-        throw new Error('Пользователь не авторизован');
-      }
-
-      // Если ID автора не передан, используем ID текущего пользователя
+      // If authorId is not provided, use current user's ID
       if (!trackData.authorId) {
         const userId = authService.getUserId();
         if (userId) {
@@ -49,72 +44,87 @@ const trackService = {
         }
       }
       
-      const response = await fetch(`${API_URL}/track`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(trackData)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Ошибка при создании трека');
-      }
-      
-      const data = await response.json() as CreateTrackResponse;
-      return data.track;
+      const response = await http.post<CreateTrackResponse>('/track', trackData);
+      return response.track;
     } catch (error) {
-      console.error('Ошибка при создании трека:', error);
+      console.error('Error creating track:', error);
       throw error;
     }
   },
 
   async getAllTracks(): Promise<Track[]> {
-    const response = await fetch(`${API_URL}/tracks`);
-    if (!response.ok) {
+    try {
+      const data = await http.get<TracksResponse>('/tracks');
+      return data.tracks;
+    } catch (error) {
+      console.error('Error fetching all tracks:', error);
       throw new Error('Failed to fetch all tracks');
     }
-    const data: TracksResponse = await response.json();
-    return data.tracks;
   },
 
   async uploadTrack(formData: FormData): Promise<Track> {
-    const response = await fetch(`${API_URL}/track/upload`, {
-      method: 'POST',
-      body: formData,
-      // Headers are not needed here as FormData sets Content-Type to multipart/form-data
-    });
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to upload track');
+    try {
+      return await http.upload<Track>('/track/upload', formData, false);
+    } catch (error) {
+      console.error('Error uploading track:', error);
+      throw new Error('Failed to upload track');
     }
-    return response.json();
   },
 
   async getTracksByAuthor(authorId: string): Promise<Track[]> {
-    const response = await fetch(`${API_URL}/track/author/${authorId}`);
-    if (!response.ok) {
+    try {
+      const data = await http.get<TracksResponse>(`/track/author/${authorId}`);
+      return data.tracks;
+    } catch (error) {
+      console.error(`Error fetching tracks by author ${authorId}:`, error);
       throw new Error('Failed to fetch tracks by author');
     }
-    const data: TracksResponse = await response.json();
-    return data.tracks;
   },
 
   async getTrackStreamUrl(trackId: string): Promise<string> {
-    const accessToken = authService.getAccessToken();
-    const response = await fetch(`${API_URL}/track/${trackId}/stream`, {
-      headers: accessToken ? {
-        'Authorization': `Bearer ${accessToken}`
-      } : {}
-    });
-    
-    if (!response.ok) {
+    try {
+      // We need to construct the full URL here since we need to return the URL directly
+      const accessToken = authService.getAccessToken();
+      const baseUrl = `${window.location.protocol}//${window.location.host}/api/track/${trackId}/stream`;
+      
+      // Add token to URL if available
+      if (accessToken) {
+        return `${baseUrl}?token=${encodeURIComponent(accessToken)}`;
+      }
+      
+      return baseUrl;
+    } catch (error) {
+      console.error(`Error getting stream URL for track ${trackId}:`, error);
       throw new Error('Failed to get track stream URL');
     }
-    
-    return response.url;
+  },
+
+  async deleteTrack(trackId: string): Promise<void> {
+    try {
+      await http.delete(`/track/${trackId}`);
+    } catch (error) {
+      console.error(`Error deleting track ${trackId}:`, error);
+      throw new Error('Failed to delete track');
+    }
+  },
+
+  async likeTrack(trackId: string): Promise<Track> {
+    try {
+      const userId = authService.getUserId();
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
+
+      const response = await http.post<LikeTrackResponse>('/track/like', {
+        trackId,
+        userId
+      });
+
+      return response.track;
+    } catch (error) {
+      console.error(`Error liking track ${trackId}:`, error);
+      throw new Error('Failed to like track');
+    }
   }
 };
 

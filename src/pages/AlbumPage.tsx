@@ -6,11 +6,10 @@ import albumService from '../services/albumService';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import TrackList from "../components/TrackList";
 import config from "../config";
-
-const PageContainer = styled.div`
-  padding: 2rem;
-  color: #fff;
-`;
+import PageLayout from '../components/PageLayout';
+import { useAuth } from '../contexts/AuthContext';
+import trackService from '../services/trackService';
+import { Track } from '../types/track';
 
 const AlbumHeader = styled.div`
   display: flex;
@@ -70,6 +69,7 @@ const AlbumPage: React.FC<AlbumPageProps> = ({ albumProp }) => {
   const [album, setAlbum] = useState<Album | null>(albumProp || null);
   const [loading, setLoading] = useState(!albumProp);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'auto' });
@@ -109,6 +109,27 @@ const AlbumPage: React.FC<AlbumPageProps> = ({ albumProp }) => {
     fetchAlbum();
   }, [id, albumProp, location.state]);
 
+  // Обработчик удаления трека
+  const handleDeleteTrack = async (trackId: string) => {
+    if (!album) return;
+
+    try {
+      // Вызываем API для удаления трека
+      await trackService.deleteTrack(trackId);
+      
+      // Обновляем состояние альбома, удаляя трек из списка
+      const updatedTracks = album.tracks?.filter(track => track.id !== trackId) || [];
+      
+      setAlbum({
+        ...album,
+        tracks: updatedTracks
+      });
+    } catch (error) {
+      console.error("Failed to delete track:", error);
+      alert("Не удалось удалить трек. Попробуйте еще раз.");
+    }
+  };
+
   if (loading) {
     return <LoadingSpinner />;
   }
@@ -136,9 +157,17 @@ const AlbumPage: React.FC<AlbumPageProps> = ({ albumProp }) => {
     return "";  
   };
 
+  // Проверяем, является ли текущий пользователь владельцем альбома
+  const isOwner = user && album.ownerId === user.id;
+
+  // Добавляем albumOwnerId к трекам, если его нет
+  const tracksWithOwnerInfo = album.tracks?.map((track: Track) => ({
+    ...track,
+    albumOwnerId: album.ownerId
+  }));
 
   return (
-    <PageContainer>
+    <PageLayout>
       <AlbumHeader>
         <AlbumCover src={coverUrl} alt={album.title} />
         <AlbumInfo>
@@ -152,9 +181,13 @@ const AlbumPage: React.FC<AlbumPageProps> = ({ albumProp }) => {
 
       <TracksSection>
         <SectionTitle>Треки</SectionTitle>
-        <TrackList tracks={album.tracks || []} />
+        <TrackList 
+          tracks={tracksWithOwnerInfo} 
+          onDeleteTrack={handleDeleteTrack}
+          showDeleteButton={isOwner || user?.id === album.ownerId}
+        />
       </TracksSection>
-    </PageContainer>
+    </PageLayout>
   );
 };
 

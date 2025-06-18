@@ -8,10 +8,8 @@ import { Playlist } from '../types/playlist';
 import AlbumGrid from '../components/AlbumGrid';
 import UserGrid from '../components/UserGrid';
 import config from '../config';
-
-const Container = styled.div`
-  padding: 2rem;
-`;
+import { LoadingSpinner } from '../components/LoadingSpinner';
+import PageLayout from '../components/PageLayout';
 
 const Section = styled.div`
   margin-bottom: 3rem;
@@ -68,12 +66,6 @@ const PlaylistAuthor = styled.p`
   margin: 0;
 `;
 
-const LoadingIndicator = styled.div`
-  text-align: center;
-  padding: 2rem;
-  color: #aaa;
-`;
-
 const ErrorMessage = styled.div`
   color: #e74c3c;
   text-align: center;
@@ -122,38 +114,38 @@ const HomePage: React.FC = () => {
   }, []);
 
   if (loading) {
-    return <LoadingIndicator>Загрузка...</LoadingIndicator>;
+    return <LoadingSpinner/>;
   }
 
   return (
-    <Container>
-      {error && <ErrorMessage>{error}</ErrorMessage>}
+    <PageLayout>
+        {error && <ErrorMessage>{error}</ErrorMessage>}
 
-      <Section>
-        <SectionTitle>Последние альбомы</SectionTitle>
-        <AlbumGrid albums={latestAlbums} />
-      </Section>
+        <Section>
+          <SectionTitle>Последние альбомы</SectionTitle>
+          <AlbumGrid albums={latestAlbums} />
+        </Section>
 
-      <Section>
-        <SectionTitle>Последние плейлисты</SectionTitle>
-        <PlaylistGrid>
-          {latestPlaylists.map(playlist => (
-            <PlaylistCard key={playlist.id} to={`/playlist/${playlist.id}`}>
-              <PlaylistImage src={formatAvatarUrl(playlist.avatarUrl)} alt={playlist.title} />
-              <PlaylistInfo>
-                <PlaylistTitle>{playlist.title}</PlaylistTitle>
-                <PlaylistAuthor>{playlist.author?.name || 'Unknown User'}</PlaylistAuthor>
-              </PlaylistInfo>
-            </PlaylistCard>
-          ))}
-        </PlaylistGrid>
-      </Section>
+        <Section>
+          <SectionTitle>Последние плейлисты</SectionTitle>
+          <PlaylistGrid>
+            {latestPlaylists.map(playlist => (
+              <PlaylistCard key={playlist.id} to={`/playlist/${playlist.id}`}>
+                <PlaylistImage src={formatAvatarUrl(playlist.avatarUrl)} alt={playlist.title} />
+                <PlaylistInfo>
+                  <PlaylistTitle>{playlist.title}</PlaylistTitle>
+                  <PlaylistAuthor>{playlist.author?.name || 'Unknown User'}</PlaylistAuthor>
+                </PlaylistInfo>
+              </PlaylistCard>
+            ))}
+          </PlaylistGrid>
+        </Section>
 
-      <Section>
-        <SectionTitle>Новые пользователи</SectionTitle>
-        <UserGrid users={latestUsers} />
-      </Section>
-    </Container>
+        <Section>
+          <SectionTitle>Новые пользователи</SectionTitle>
+          <UserGrid users={latestUsers} />
+        </Section>
+    </PageLayout>
   );
 };
 

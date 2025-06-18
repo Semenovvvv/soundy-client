@@ -18,14 +18,22 @@ import CreateAlbumPage from "./pages/CreateAlbumPage";
 import HomePage from "./pages/HomePage";
 import AudioPlayer from "./components/AudioPlayer";
 import { AudioPlayerProvider, useAudioPlayer } from "./contexts/AudioPlayerContext";
+import { AuthProvider } from "./contexts/AuthContext";
+import { LoadingSpinner } from "./components/LoadingSpinner";
+import { useAuth } from "./contexts/AuthContext";
 
-// Inner App component that can use the useAudioPlayer hook
+// Inner App component that can use the context hooks
 const AppContent: React.FC = () => {
   const location = useLocation();
   const hideNavRoutes = ['/login', '/register'];
   const shouldShowNavBar = !hideNavRoutes.includes(location.pathname);
   const shouldShowPlayer = !hideNavRoutes.includes(location.pathname);
   const { currentTrack } = useAudioPlayer();
+  const { isLoading } = useAuth();
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <>
@@ -56,12 +64,14 @@ const AppContent: React.FC = () => {
   );
 };
 
-// Main App component that provides the audio player context
+// Main App component that provides the context providers
 function App() {
   return (
-    <AudioPlayerProvider>
-      <AppContent />
-    </AudioPlayerProvider>
+    <AuthProvider>
+      <AudioPlayerProvider>
+        <AppContent />
+      </AudioPlayerProvider>
+    </AuthProvider>
   );
 }
 

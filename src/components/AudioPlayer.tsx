@@ -3,6 +3,7 @@ import Hls from 'hls.js';
 import styled from 'styled-components';
 import { Track } from '../types/track';
 import config from "../config";
+import { useAuth } from '../contexts/AuthContext';
 
 // ====== Styled Components ======
 
@@ -13,7 +14,7 @@ const PlayerContainer = styled.div`
   right: 0;
   background: linear-gradient(90deg, #1a1a1a 0%, #2d2d2d 100%);
   color: white;
-  padding: 0.8rem 1.5rem;
+  padding: 0.6rem 1.5rem;
   display: flex;
   justify-content: space-between;
   //grid-template-columns: minmax(180px, 1fr) 2fr minmax(150px, 1fr);
@@ -108,9 +109,9 @@ const ProgressSection = styled.div`
 `;
 
 const TimeDisplay = styled.span`
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   color: #b3b3b3;
-  min-width: 45px;
+  min-width: 2rem;
   text-align: center;
   font-variant-numeric: tabular-nums;
 `;
@@ -178,6 +179,8 @@ const VolumeSlider = styled.input`
     background: #1db954;
     border-radius: 50%;
     cursor: pointer;
+    position: relative;
+    top: -4px;
   }
   
   &::-webkit-slider-runnable-track {
@@ -196,8 +199,8 @@ const IconButton = styled.button<{ $primary?: boolean }>`
   background: none;
   border: none;
   color: ${props => props.$primary ? '#1db954' : '#fff'};
-  width: ${props => props.$primary ? '40px' : '32px'};
-  height: ${props => props.$primary ? '40px' : '32px'};
+  width: ${props => props.$primary ? '48px' : '36px'};
+  height: ${props => props.$primary ? '48px' : '36px'};
   padding: 0;
   display: flex;
   align-items: center;
@@ -216,8 +219,8 @@ const IconButton = styled.button<{ $primary?: boolean }>`
   }
   
   svg {
-    width: ${props => props.$primary ? '24px' : '20px'};
-    height: ${props => props.$primary ? '24px' : '20px'};
+    width: ${props => props.$primary ? '28px' : '24px'};
+    height: ${props => props.$primary ? '28px' : '24px'};
     display: block;
   }
 `;
@@ -254,6 +257,12 @@ const VolumeIcon = () => (
   </svg>
 );
 
+const VolumeOffIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor">
+    <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+  </svg>
+);
+
 // ====== Types ======
 
 interface AudioPlayerProps {
@@ -263,11 +272,13 @@ interface AudioPlayerProps {
 // ====== Main Component ======
 
 const AudioPlayer: React.FC<AudioPlayerProps> = ({ track }) => {
+  const { getAccessToken } = useAuth();
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.7);
   const [bufferedProgress, setBufferedProgress] = useState(0);
+  const [isMuted, setIsMuted] = useState(false);
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const hlsRef = useRef<Hls | null>(null);
@@ -298,8 +309,11 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ track }) => {
     setVolume(newVolume);
     if (audioRef.current) {
       audioRef.current.volume = newVolume;
+      if (isMuted && newVolume > 0) {
+        setIsMuted(false);
+      }
     }
-  }, []);
+  }, [isMuted]);
   
   // Toggle play/pause
   const togglePlayPause = useCallback((e: React.MouseEvent) => {
@@ -337,6 +351,21 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ track }) => {
     
     audioRef.current.currentTime = newTime;
   }, [currentTime, duration]);
+  
+  // Toggle mute/unmute
+  const toggleMute = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (isMuted) {
+      audio.volume = volume;
+      setIsMuted(false);
+    } else {
+      audio.volume = 0;
+      setIsMuted(true);
+    }
+  }, [isMuted, volume]);
   
   // Effect specifically for volume changes
   useEffect(() => {
@@ -377,12 +406,25 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ track }) => {
       hlsRef.current = null;
     }
     
-    const streamUrl = `${config.MEDIA_URL}/track/${track.id}/index.m3u8`;
+    // Добавляем токен авторизации к URL стрима
+    const accessToken = getAccessToken();
+    let streamUrl = `${config.MEDIA_URL}/track/${track.id}/index.m3u8`;
+    
+    // Если есть токен, добавляем его в URL
+    if (accessToken) {
+      streamUrl = `${streamUrl}?token=${encodeURIComponent(accessToken)}`;
+    }
     
     if (Hls.isSupported()) {
       const hls = new Hls({
         enableWorker: true,
         lowLatencyMode: true,
+        xhrSetup: (xhr, url) => {
+          // Если в URL еще нет токена, добавляем заголовок авторизации к запросам
+          if (!url.includes('token=') && accessToken) {
+            xhr.setRequestHeader('Authorization', `Bearer ${accessToken}`);
+          }
+        }
       });
       
       hlsRef.current = hls;
@@ -454,7 +496,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ track }) => {
       // audio.pause();
       // audio.src = '';
     };
-  }, [track]); // Removed volume from dependencies
+  }, [track, getAccessToken]); // Добавлен getAccessToken в зависимости
   
   // Setup audio event listeners
   useEffect(() => {
@@ -542,15 +584,15 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ track }) => {
       </ControlsSection>
       
       <VolumeSection>
-        <IconButton>
-          <VolumeIcon />
+        <IconButton onClick={toggleMute}>
+          {isMuted ? <VolumeOffIcon /> : <VolumeIcon />}
         </IconButton>
         <VolumeSlider
           type="range"
           min="0"
           max="1"
           step="0.01"
-          value={volume}
+          value={isMuted ? 0 : volume}
           onChange={handleVolumeChange}
         />
       </VolumeSection>
